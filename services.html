@@ -5,186 +5,296 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Services | ARKA LENS</title>
-    <meta name="theme-color" content="#5e0b15">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Manrope:wght@300;400;600&family=Syncopate:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=Syncopate:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
-
 <body>
-    <div class="noise-overlay"></div>
+    <div class="preloader">
+        <div class="loader-content">
+            <span class="brand-loader"></span>
+            <div class="loading-bar">
+                <div class="bar-fill"></div>
+            </div>
+        </div>
+    </div>
+    <div class="noise-surface"></div>
 
-    <header class="navbar">
-        <a href="index.html" class="logo hover-magnetic">AL.ODISHA</a>
-        <button class="menu-toggle hover-magnetic" id="menu-toggle" aria-label="Toggle Menu">
-            <span class="line line-1"></span>
-            <span class="line line-2"></span>
-        </button>
+    <header class="floating-header">
+        <a href="index.html" class="floating-brand">ARKA LENS.</a>
+        <div class="menu-corner">
+            <button class="minimal-trigger menu-trigger" aria-label="Toggle Menu">
+                <span class="trigger-text">MENU</span>
+                <div class="trigger-lines">
+                    <span class="line-1"></span>
+                    <span class="line-2"></span>
+                </div>
+            </button>
+        </div>
     </header>
 
-    <div class="menu-overlay" id="menu-overlay">
-        <nav class="menu-nav">
-            <a href="index.html" class="menu-link" data-text="HOME">HOME</a>
-            <a href="index.html#work" class="menu-link" data-text="WORK">WORK</a>
-            <a href="services.html" class="menu-link" data-text="SERVICES">SERVICES</a>
-            <a href="index.html#contact" class="menu-link" data-text="CONTACT">CONTACT</a>
-        </nav>
-        <button class="menu-close" id="menu-close">CLOSE</button>
+    <div class="fullscreen-menu">
+        <div class="menu-content">
+            <div class="menu-grid">
+                <div class="menu-main-links">
+                    <a href="index.html" class="menu-link">Home <span class="index">01</span></a>
+                    <a href="work.html" class="menu-link">Work <span class="index">02</span></a>
+                    <a href="services.html" class="menu-link">Services <span class="index">03</span></a>
+                    <a href="#contact" class="menu-link contact-trigger">Contact <span class="index">04</span></a>
+                </div>
+                <div class="menu-info">
+                    <div class="menu-col">
+                        <h4>Socials</h4>
+                        <a href="#">Instagram ↗</a>
+                        <a href="#">YouTube ↗</a>
+                        <a href="#">LinkedIn ↗</a>
+                    </div>
+                    <div class="menu-col">
+                        <h4>Contact</h4>
+                        <a href="mailto:your-email@gmail.com">your-email@gmail.com</a>
+                        <a href="tel:+919000000000"
+                            style="display:block; margin-top:10px; color:#f4f1ea; text-decoration:none;">
+                            +91 90000 00000
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <main>
-        <section class="service-hero">
-            <div class="hero-backdrop">
-                <img src="./image/1.jpg" alt="Odisha Texture" class="parallax-img">
+        <section class="hero-viewport">
+            <div class="hero-media">
+                <img src="./image/1.jpg" alt="Services Hero" class="media-layer">
+                <div class="vignette-overlay"></div>
             </div>
-            <div class="hero-glow"></div>
-            <div class="service-hero-content">
-                <h1 class="hero-title-main" style="font-size: clamp(3rem, 10vw, 8rem);">SERVICES</h1>
-                <p class="serif-italic" style="font-size: 1.5rem; color: var(--color-gold);">
-                    The art of visual storytelling.
-                </p>
-            </div>
-        </section>
-
-        <section id="cinema" class="zig-zag-section">
-            <div class="zig-zag-row dark">
-                <div class="text-half">
-                    <span class="big-num">01</span>
-                    <h2 class="row-title">CINEMATO<br><span style="color: var(--color-gold);">GRAPHY</span></h2>
-                    <p class="row-desc">
-                        We don't just record events; we craft cinematic narratives. Using industry-standard equipment
-                        and color science, we turn your wedding or brand story into a film.
-                    </p>
-                    <div class="feature-tags">
-                        <span class="tag">4K Drone</span>
-                        <span class="tag">Storyboarding</span>
-                        <span class="tag">Color Grading</span>
-                        <span class="tag">Sony FX3</span>
-                    </div>
+            <div class="hero-typography">
+                <div class="label-caps">Expertise</div>
+                <h1 class="headline-display">
+                    VISUAL<br>ENGINEERING
+                </h1>
+                <div
+                    style="margin-top: 40px; color: var(--text-secondary); max-width: 500px; margin-left: auto; margin-right: auto;">
+                    We merge technical precision with artistic intuition to create defining moments. Scroll to explore.
                 </div>
-                <div class="img-half">
-                    <img src="./image/danny-gan-TK504FfFQ5A-unsplash.jpg" alt="Cinematography Setup">
+                <div style="margin-top: 60px; opacity: 0.6; animation: bounce 2s infinite;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white">
+                        <path d="M12 5V19M12 19L19 12M12 19L5 12" stroke-width="2" />
+                    </svg>
                 </div>
             </div>
         </section>
 
-        <section id="photo" class="zig-zag-section">
-            <div class="zig-zag-row reverse maroon">
-                <div class="text-half">
-                    <span class="big-num">02</span>
-                    <h2 class="row-title">EDITORIAL<br><span style="color: var(--color-dark);">PHOTO</span></h2>
-                    <p class="row-desc">
-                        Inspired by Vogue and high-fashion editorials. We focus on raw emotions,
-                        candid laughter, and artistic composition rather than awkward poses.
-                    </p>
-                    <div class="feature-tags">
-                        <span class="tag"
-                            style="border-color: rgba(0,0,0,0.3); color: var(--color-dark);">Portraits</span>
-                        <span class="tag"
-                            style="border-color: rgba(0,0,0,0.3); color: var(--color-dark);">Pre-Wedding</span>
-                        <span class="tag"
-                            style="border-color: rgba(0,0,0,0.3); color: var(--color-dark);">Retouching</span>
+        <section class="horizontal-scroll-view">
+            <div class="sticky-viewport">
+                <div class="horizontal-track">
+                    <div class="reel-card intro">
+                        <h2 class="section-label" style="font-size: 4rem; line-height: 1;">OUR<br>CORE<br>SERVICES</h2>
+                        <div class="label-caps" style="margin-top: 20px;">01 &mdash; 03</div>
                     </div>
-                </div>
-                <div class="img-half">
-                    <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000"
-                        alt="Editorial Photography">
+
+                    <div class="reel-card service">
+                        <div class="reel-visual">
+                            <img src="./image/1.jpg" alt="Cinematography">
+                            <div class="reel-overlay"></div>
+                        </div>
+                        <div class="reel-content">
+                            <div class="reel-number">01</div>
+                            <h3>CINEMATOGRAPHY</h3>
+                            <p>Narrative-driven wedding films and brand documentaries. We treat every frame like a
+                                painting.</p>
+                            <div class="service-features">
+                                <span class="feature-tag">4K Drone</span>
+                                <span class="feature-tag">Sound Design</span>
+                                <span class="feature-tag">Color Grading</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reel-card service">
+                        <div class="reel-visual">
+                            <img src="./image/danny-gan-a8glVxJbE-c-unsplash.jpg" alt="Photography">
+                            <div class="reel-overlay"></div>
+                        </div>
+                        <div class="reel-content">
+                            <div class="reel-number">02</div>
+                            <h3>EDITORIAL PHOTO</h3>
+                            <p>Moving away from awkward poses. We capture raw emotion with a high-fashion, editorial
+                                eye.</p>
+                            <div class="service-features">
+                                <span class="feature-tag">Candid</span>
+                                <span class="feature-tag">Retouching</span>
+                                <span class="feature-tag">Print Quality</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reel-card service">
+                        <div class="reel-visual">
+                            <img src="./image/danny-gan-TK504FfFQ5A-unsplash.jpg" alt="Gear Rental">
+                            <div class="reel-overlay"></div>
+                        </div>
+                        <div class="reel-content">
+                            <div class="reel-number">03</div>
+                            <h3>GEAR RENTAL</h3>
+                            <p>Odisha's premium inventory. Rent the tools we use to create magic.</p>
+                            <div class="rent-list">
+                                <div class="price-row">
+                                    <span>Sony FX3</span>
+                                    <span class="gold">₹3,500/day</span>
+                                </div>
+                                <div class="price-row">
+                                    <span>GM 24-70mm II</span>
+                                    <span class="gold">₹1,200/day</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reel-card cta">
+                        <div class="cta-content">
+                            <h3>READY TO SHOOT?</h3>
+                            <a href="#contact" class="apple-button dark">Book a Date</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="rental" class="rental-section">
-            <div class="grid-header">
-                <h2 class="font-display" style="font-size: clamp(2rem, 5vw, 3rem);">GEAR <span
-                        style="color: var(--color-gold);">RENTAL</span></h2>
-                <p class="serif-italic">Odisha's premium equipment inventory.</p>
-            </div>
-
-            <div class="rental-grid">
-                <div class="rental-card">
-                    <div>
-                        <h3 class="font-display">Sony FX3</h3>
-                        <p style="font-size: 0.8rem; opacity: 0.7;">Cinema Line • 4K 120p</p>
+        <footer id="contact" class="footer-view">
+            <div class="footer-container">
+                <div class="footer-top">
+                    <div class="footer-statement">
+                        <h3>We craft visual legacies for brands and individuals who refuse to blend in.</h3>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1624823183492-91eb7c485603?q=80&w=600" alt="Camera">
-                    <div class="rental-price">₹3,500 / day</div>
-                </div>
-
-                <div class="rental-card">
-                    <div>
-                        <h3 class="font-display">Sony A7S III</h3>
-                        <p style="font-size: 0.8rem; opacity: 0.7;">Low Light Master</p>
+                    <div class="footer-email-box">
+                        <span class="footer-label">Start a Conversation</span>
+                        <a href="mailto:hello@arkalens.com" class="big-email-link">hello@arkalens.com</a>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=600" alt="Camera Lens"
-                        style="filter:grayscale(100%);">
-                    <div class="rental-price">₹3,000 / day</div>
                 </div>
 
-                <div class="rental-card">
-                    <div>
-                        <h3 class="font-display">GM 24-70mm</h3>
-                        <p style="font-size: 0.8rem; opacity: 0.7;">Master Series Lens</p>
+                <div class="footer-bottom-grid">
+                    <div class="footer-brand-col">
+                        <h2>ARKA LENS.</h2>
+                        <p style="margin-bottom: 20px;">Based in Bhubaneswar, Odisha.<br>Available for commissions
+                            worldwide.</p>
+
+                        <h4 style="font-size: 0.8rem; text-transform:uppercase; color:white; margin-bottom:10px;">Call
+                            Us</h4>
+                        <a href="tel:+919000000000"
+                            style="color:var(--text-secondary); text-decoration:none; font-size:1.1rem;">
+                            +91 90000 00000
+                        </a>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1617005082133-548c4dd27f35?q=80&w=600" alt="Lens">
-                    <div class="rental-price">₹1,200 / day</div>
-                </div>
-
-                <div class="rental-card">
-                    <div>
-                        <h3 class="font-display">DJI Mavic 3</h3>
-                        <p style="font-size: 0.8rem; opacity: 0.7;">5.1K ProRes Drone</p>
+                    <div class="footer-nav-col">
+                        <h4>Sitemap</h4>
+                        <ul>
+                            <li><a href="index.html">Home</a></li>
+                            <li><a href="work.html">Selected Works</a></li>
+                            <li><a href="services.html">Services</a></li>
+                        </ul>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1579829366248-204fe8413f31?q=80&w=600" alt="Drone">
-                    <div class="rental-price">₹5,000 / day</div>
+                    <div class="footer-nav-col">
+                        <h4>Socials</h4>
+                        <ul>
+                            <li><a href="#">Instagram</a></li>
+                            <li><a href="#">YouTube</a></li>
+                            <li><a href="#">LinkedIn</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-nav-col">
+                        <h4>Legal</h4>
+                        <ul>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms of Use</a></li>
+                            <li><a href="#">Credits</a></li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </section>
 
-        <section id="team"
-            style="padding: 8rem 1rem; text-align: center; background: radial-gradient(circle, #5e0b15 0%, #0a0a0a 70%);">
-            <h2 class="font-display" style="font-size: clamp(2rem, 5vw, 4rem);">NEED A CREW?</h2>
-            <p style="margin: 2rem auto; max-width: 600px; font-family: var(--font-serif); font-size: 1.5rem;">
-                We connect you with Odisha's finest freelancers.
-            </p>
-            <a href="index.html#contact" class="btn-royal hover-magnetic">
-                <span class="btn-text">Contact Us</span>
-            </a>
-        </section>
-
-        <footer class="grand-footer">
-            <div class="footer-top">
-                <div class="footer-col">
-                    <h4 class="footer-label">Sitemap</h4>
-                    <ul class="footer-list">
-                        <li><a href="index.html" class="hover-underline">Home</a></li>
-                        <li><a href="index.html#work" class="hover-underline">Work</a></li>
-                        <li><a href="services.html" class="hover-underline">Services</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4 class="footer-label">Socials</h4>
-                    <ul class="footer-list">
-                        <li><a href="#" target="_blank" class="hover-underline">Whatsapp</a></li>
-                        <li><a href="#" target="_blank" class="hover-underline">Instagram</a></li>
-                        <li><a href="#" target="_blank" class="hover-underline">Email</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <h1 class="giant-footer-text">ARKA LENS</h1>
-                <div class="footer-legal">
-                    <span>&copy; 2025 Arka Lens.</span>
+                <div class="footer-base">
+                    <span>© 2025 Arka Lens Visuals. All Rights Reserved.</span>
+                    <div class="live-time">
+                        <span class="pulse-dot"></span>
+                        <span id="local-time">00:00 IST</span>
+                    </div>
                 </div>
             </div>
         </footer>
     </main>
+    <div id="contact-modal" class="modal-backdrop">
+        <div class="modal-window">
+            <button class="modal-close-btn" aria-label="Close Modal">
+                <span class="line-1"></span>
+                <span class="line-2"></span>
+            </button>
 
+            <div class="modal-header">
+                <span class="label-caps">Get in Touch</span>
+                <h2 class="headline-display" style="font-size: 2.5rem; margin-top: 10px;">LET'S TALK</h2>
+            </div>
+
+            <form class="modal-form" onsubmit="event.preventDefault();">
+                <div class="input-group">
+                    <input type="text" id="name" required placeholder=" ">
+                    <label for="name">Your Name</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="email" id="email" required placeholder=" ">
+                    <label for="email">Email Address</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="tel" id="phone" placeholder=" ">
+                    <label for="phone">Phone Number</label>
+                </div>
+
+                <div class="input-group">
+                    <textarea id="message" required placeholder=" " rows="4"></textarea>
+                    <label for="message">Project Details</label>
+                </div>
+
+                <button type="submit" class="apple-button dark" style="width: 100%; margin-top: 20px;">
+                    <span>Send Message</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div id="video-lightbox" class="modal-backdrop">
+        <div class="video-container">
+            <button class="modal-close-btn" id="close-video" style="top:-50px; right:0;">
+                <span class="line-1"></span>
+                <span class="line-2"></span>
+            </button>
+            <div class="video-wrapper">
+                <iframe id="video-frame" src="" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
     <script src="script.js"></script>
+    <style>
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
 </body>
 
 </html>

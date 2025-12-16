@@ -1,645 +1,321 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ===== UTILITIES =====
-
-    // Reusable debounce (already exists, but moved to top)
-
-    const debounce = (func, wait) => {
-
-        let timeout;
-
-        return function executedFunction(...args) {
-
-            clearTimeout(timeout);
-
-            timeout = setTimeout(() => func.apply(this, args), wait);
-
-        };
-
-    };
-
-    // NEW: Throttle for scroll events
-
-    const throttle = (func, limit) => {
-
-        let inThrottle;
-
-        return function (...args) {
-
-            if (!inThrottle) {
-
-                func.apply(this, args);
-
-                inThrottle = true;
-
-                setTimeout(() => inThrottle = false, limit);
-
-            }
-
-        };
-
-    };
-
-    // ===== 1. PRELOADER & HERO ANIMATION =====
-
-    const preloader = document.getElementById('preloader');
-
-    const initHeroAnimation = () => {
-
-        const titleMain = document.querySelector('.hero-title-main');
-
-        if (!titleMain) return;
-
-        titleMain.style.opacity = '0';
-
-        titleMain.style.transform = 'translateY(50px)';
-
-        titleMain.style.transition = 'opacity 1s cubic-bezier(0.215, 0.61, 0.355, 1), transform 1s cubic-bezier(0.215, 0.61, 0.355, 1)';
-
-        requestAnimationFrame(() => {
-
-            requestAnimationFrame(() => {
-
-                titleMain.style.opacity = '1';
-
-                titleMain.style.transform = 'translateY(0)';
-
-            });
-
-        });
-
-    };
-
-    window.addEventListener('load', () => {
-
-        setTimeout(() => {
-
-            if (preloader) {
-
-                preloader.classList.add('hidden');
-
-                // Remove from DOM after animation
-
-                setTimeout(() => preloader.remove(), 1000);
-
-            }
-
-            setTimeout(initHeroAnimation, 500);
-
-        }, 1500);
-
-    });
-
-    // ===== 2. INTERSECTION OBSERVER - TEXT REVEAL =====
-
-    const initTextReveal = () => {
-
-        const revealText = document.querySelector('.reveal-text');
-
-        if (!revealText) return;
-
-        const text = revealText.textContent.trim();
-
-        const words = text.split(/\s+/);
-
-        const fragment = document.createDocumentFragment(); // Performance optimization
-
-        words.forEach(word => {
-
-            const span = document.createElement('span');
-
-            span.textContent = word + ' ';
-
-            span.className = 'reveal-word';
-
-            fragment.appendChild(span);
-
-        });
-
-        revealText.innerHTML = '';
-
-        revealText.appendChild(fragment);
-
-        const observer = new IntersectionObserver(
-
-            (entries) => {
-
-                entries.forEach(entry => {
-
-                    if (entry.isIntersecting) {
-
-                        const spans = entry.target.querySelectorAll('.reveal-word');
-
-                        spans.forEach((span, index) => {
-
-                            setTimeout(() => span.classList.add('active'), index * 30);
-
-                        });
-
-                        observer.unobserve(entry.target);
-
-                    }
-
-                });
-
-            },
-
-            { threshold: 0.2, rootMargin: '0px 0px -100px 0px' }
-
-        );
-
-        observer.observe(revealText);
-
-    };
-
-    initTextReveal();
-
-    // ===== 3. PARALLAX EFFECT (THROTTLED) =====
-
-    const parallaxImg = document.querySelector('.parallax-img');
-
-    const handleParallax = throttle(() => {
-
-        if (window.scrollY < window.innerHeight && parallaxImg) {
-
-            const scrolled = window.scrollY;
-
-            const translateY = scrolled * 0.5;
-
-            const scale = 1 - (scrolled * 0.0005);
-
-            const opacity = 1 - (scrolled * 0.001);
-
-            parallaxImg.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale})`;
-
-            parallaxImg.style.opacity = opacity;
-
-        }
-
-    }, 16); // ~60fps
-
-    if (parallaxImg) {
-
-        window.addEventListener('scroll', handleParallax, { passive: true });
-
-    }
-
-    // ===== 4. HORIZONTAL SCROLL (OPTIMIZED) =====
-
-    const workSection = document.getElementById('work');
-
-    const horizontalContainer = document.getElementById('work-container');
-
-    if (workSection && horizontalContainer) {
-
-        let state = {
-
-            current: 0,
-
-            target: 0,
-
-            limit: 0,
-
-            ease: 0.08,
-
-            rafId: null
-
-        };
-
-        const isMobile = () => window.innerWidth <= 768;
-
-        const initHorizontalScroll = () => {
-
-            if (!isMobile()) {
-
-                const containerWidth = horizontalContainer.scrollWidth;
-
-                const viewportWidth = window.innerWidth;
-
-                const scrollDist = containerWidth - viewportWidth;
-
-                state.limit = Math.max(0, scrollDist);
-
-                workSection.style.height = `${scrollDist + (window.innerHeight * 1.5)}px`;
-
-            } else {
-
-                workSection.style.height = 'auto';
-
-                horizontalContainer.style.transform = 'none';
-
-                if (state.rafId) {
-
-                    cancelAnimationFrame(state.rafId);
-
-                    state.rafId = null;
-
-                }
-
-            }
-
-        };
-
-        const animateScroll = () => {
-
-            if (isMobile()) return;
-
-            const sectionTop = workSection.offsetTop;
-
-            const scrollY = window.scrollY;
-
-            if (scrollY >= sectionTop && scrollY <= sectionTop + workSection.offsetHeight) {
-
-                const relativeScroll = scrollY - sectionTop;
-
-                state.target = Math.min(Math.max(relativeScroll, 0), state.limit);
-
-            }
-
-            const diff = state.target - state.current;
-
-            // Only update if difference is significant (performance)
-
-            if (Math.abs(diff) > 0.1) {
-
-                state.current += diff * state.ease;
-
-                const skew = Math.max(-7, Math.min(7, diff * 0.15));
-
-                horizontalContainer.style.transform =
-
-                    `translate3d(-${state.current.toFixed(2)}px, 0, 0) skewX(${-skew.toFixed(2)}deg)`;
-
-            }
-
-            state.rafId = requestAnimationFrame(animateScroll);
-
-        };
-
-        const debouncedInit = debounce(() => {
-
-            initHorizontalScroll();
-
-            state.current = 0;
-
-            state.target = 0;
-
-        }, 150);
-
-        window.addEventListener('resize', debouncedInit);
-
-        initHorizontalScroll();
-
-        if (!isMobile()) {
-
-            animateScroll();
-
-        }
-
-    }
-
-    // ===== 5. MENU TOGGLE =====
-
-    const menuToggle = document.getElementById('menu-toggle');
-
-    const menuClose = document.getElementById('menu-close');
-
-    const menuOverlay = document.getElementById('menu-overlay');
-
+    // --- 1. FULL SCREEN MENU LOGIC ---
+    const menuBtn = document.querySelector('.menu-trigger');
+    const fullMenu = document.querySelector('.fullscreen-menu');
+    const header = document.querySelector('.floating-header'); // Select the header
     const menuLinks = document.querySelectorAll('.menu-link');
 
-    // Make toggleMenu global for accessibility enhancement
-    window.toggleMenu = () => {
+    if (menuBtn && fullMenu) {
+        menuBtn.addEventListener('click', () => {
+            fullMenu.classList.toggle('active');
+            menuBtn.classList.toggle('active');
 
-        if (menuOverlay) {
+            // TOGGLE HEADER COLOR STATE
+            if (header) header.classList.toggle('menu-active');
 
-            const isActive = menuOverlay.classList.toggle('active');
+            // Toggle body scroll
+            document.body.style.overflow = fullMenu.classList.contains('active') ? 'hidden' : '';
+        });
 
-            // Prevent body scroll when menu is open
+        // Close menu when a link is clicked
+        menuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                fullMenu.classList.remove('active');
+                menuBtn.classList.remove('active');
+                if (header) header.classList.remove('menu-active'); // Reset header
+                document.body.style.overflow = '';
+            });
+        });
+    }
 
-            document.body.style.overflow = isActive ? 'hidden' : '';
+    // --- 2. TIME CLOCK ---
+    const timeEl = document.getElementById('local-time');
+    if (timeEl) {
+        const updateTime = () => {
+            const now = new Date();
+            timeEl.textContent = now.toLocaleTimeString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                hour: '2-digit', minute: '2-digit', hour12: true
+            }) + ' IST';
+        };
+        setInterval(updateTime, 1000);
+        updateTime();
+    }
 
-            // Focus management
-            if (isActive) {
-                setTimeout(() => menuClose?.focus(), 100);
-            } else {
-                menuToggle?.focus();
-            }
+    // --- 3. CUSTOM CURSOR ---
+    if (window.matchMedia("(pointer: fine)").matches) {
+        const cursorDot = document.createElement('div');
+        const cursorOutline = document.createElement('div');
+        cursorDot.className = 'cursor-dot';
+        cursorOutline.className = 'cursor-outline';
+        document.body.appendChild(cursorDot);
+        document.body.appendChild(cursorOutline);
 
-        }
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+    }
 
-    };
-
-    if (menuToggle) menuToggle.addEventListener('click', window.toggleMenu);
-
-    if (menuClose) menuClose.addEventListener('click', window.toggleMenu);
-
-    menuLinks.forEach(link => link.addEventListener('click', window.toggleMenu));
-
-    // Close menu on escape key
-
-    document.addEventListener('keydown', (e) => {
-
-        if (e.key === 'Escape' && menuOverlay?.classList.contains('active')) {
-
-            window.toggleMenu();
-
-        }
-
+    // --- 4. MAGNETIC BUTTONS ---
+    const magneticBtns = document.querySelectorAll('.apple-button');
+    magneticBtns.forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+        });
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translate(0px, 0px)';
+        });
     });
 
-    // ===== ENHANCED MENU ACCESSIBILITY =====
-    const enhanceMenuAccessibility = () => {
-        if (!menuOverlay) return;
-
-        const focusableElements = menuOverlay.querySelectorAll(
-            'a[href], button:not([disabled]), input:not([disabled])'
-        );
-
-        if (!focusableElements.length) return;
-
-        const firstFocusable = focusableElements[0];
-        const lastFocusable = focusableElements[focusableElements.length - 1];
-
-        // Trap focus inside menu when open
-        menuOverlay.addEventListener('keydown', (e) => {
-            if (!menuOverlay.classList.contains('active')) return;
-
-            if (e.key === 'Tab') {
-                if (e.shiftKey) {
-                    if (document.activeElement === firstFocusable) {
-                        e.preventDefault();
-                        lastFocusable.focus();
-                    }
-                } else {
-                    if (document.activeElement === lastFocusable) {
-                        e.preventDefault();
-                        firstFocusable.focus();
-                    }
-                }
-            }
-        });
-    };
-
-    enhanceMenuAccessibility();
-
-    // ===== SWIPE TO CLOSE MENU =====
-    const addMenuSwipeGesture = () => {
-        if (!menuOverlay) return;
-
-        let touchStartY = 0;
-        let touchEndY = 0;
-
-        menuOverlay.addEventListener('touchstart', (e) => {
-            touchStartY = e.changedTouches[0].screenY;
-        }, { passive: true });
-
-        menuOverlay.addEventListener('touchend', (e) => {
-            touchEndY = e.changedTouches[0].screenY;
-            const swipeDistance = touchEndY - touchStartY;
-            // Swipe down to close (at least 100px)
-            if (swipeDistance > 100 && menuOverlay.classList.contains('active')) {
-                window.toggleMenu();
+    // --- 5. HERO PARALLAX ---
+    const heroMedia = document.querySelector('.media-layer');
+    if (heroMedia) {
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY;
+            if (scrolled < window.innerHeight) {
+                const scale = 1.1 - (scrolled * 0.0005);
+                heroMedia.style.transform = `scale(${Math.max(1.0, scale)})`;
             }
         }, { passive: true });
-    };
+    }
 
-    addMenuSwipeGesture();
+    // --- 6. STACK ENGINE (Work Page) ---
+    const cards = document.querySelectorAll('.stack-card');
+    if (cards.length > 0) {
+        const animateStack = () => {
+            const windowHeight = window.innerHeight;
+            cards.forEach((card, index) => {
+                const nextCard = cards[index + 1];
+                if (nextCard) {
+                    const nextRect = nextCard.getBoundingClientRect();
+                    const start = windowHeight;
+                    const end = 60;
+                    let progress = (start - nextRect.top) / (start - end);
+                    progress = Math.max(0, Math.min(1, progress));
 
-    // ===== 6. MAGNETIC BUTTONS (OPTIMIZED) =====
-
-    const magneticBtns = document.querySelectorAll('.btn-royal, .menu-toggle, .social-links a, .hover-magnetic, .btn-circle');
-
-    // Only enable on non-touch devices
-
-    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-
-        magneticBtns.forEach(btn => {
-
-            const handleMouseMove = throttle((e) => {
-
-                const rect = btn.getBoundingClientRect();
-
-                const x = e.clientX - rect.left - rect.width / 2;
-
-                const y = e.clientY - rect.top - rect.height / 2;
-
-                btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-
-                const btnText = btn.querySelector('.btn-text');
-
-                if (btnText) {
-
-                    btnText.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px)`;
-
+                    if (progress > 0) {
+                        const scale = 1 - (progress * 0.1);
+                        const filter = 1 - (progress * 0.6);
+                        card.style.transform = `scale(${scale})`;
+                        card.style.filter = `brightness(${filter})`;
+                        card.style.opacity = `${1 - (progress * 0.5)}`;
+                    } else {
+                        card.style.transform = 'scale(1)';
+                        card.style.filter = 'brightness(1)';
+                        card.style.opacity = '1';
+                    }
                 }
-
-            }, 16);
-
-            btn.addEventListener('mousemove', handleMouseMove);
-
-            btn.addEventListener('mouseleave', () => {
-
-                btn.style.transform = 'translate(0px, 0px)';
-
-                const btnText = btn.querySelector('.btn-text');
-
-                if (btnText) btnText.style.transform = 'translate(0px, 0px)';
-
             });
-
-        });
-
+            requestAnimationFrame(animateStack);
+        };
+        requestAnimationFrame(animateStack);
     }
 
-    // ===== 7. ATMOSPHERIC GLOW ORB =====
+    // --- 7. HORIZONTAL REEL ENGINE (Services Page) ---
+    const reelSection = document.querySelector('.horizontal-scroll-view');
+    const track = document.querySelector('.horizontal-track');
 
-    const orb = document.querySelector('.glow-orb');
-
-    if (orb && window.matchMedia('(hover: hover)').matches) {
-
-        const handleOrbMove = throttle((e) => {
-
-            const x = (e.clientX / window.innerWidth) * 50;
-
-            const y = (e.clientY / window.innerHeight) * 50;
-
-            orb.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-
-        }, 32);
-
-        document.addEventListener('mousemove', handleOrbMove, { passive: true });
-
-    }
-
-    // ===== 8. FOOTER UTILITIES =====
-
-    // Live Time with proper timezone handling
-
-    const updateTime = () => {
-
-        const timeEl = document.getElementById('live-time');
-
-        if (timeEl) {
-
-            const now = new Date();
-
-            timeEl.textContent = now.toLocaleTimeString('en-IN', {
-
-                hour: 'numeric',
-
-                minute: '2-digit',
-
-                hour12: true,
-
-                timeZone: 'Asia/Kolkata'
-
-            });
-
-        }
-
-    };
-
-    const timeEl = document.getElementById('live-time');
-
-    if (timeEl) {
-
-        updateTime();
-
-        setInterval(updateTime, 1000);
-
-    }
-
-    // Back to Top with smooth scroll
-
-    const backTopBtn = document.getElementById('back-to-top');
-
-    if (backTopBtn) {
-
-        backTopBtn.addEventListener('click', (e) => {
-
-            e.preventDefault();
-
-            window.scrollTo({
-
-                top: 0,
-
-                behavior: 'smooth'
-
-            });
-
-        });
-
-        // Show/hide button based on scroll position
-
-        const toggleBackBtn = throttle(() => {
-
-            if (window.scrollY > 500) {
-
-                backTopBtn.style.opacity = '1';
-
-                backTopBtn.style.pointerEvents = 'auto';
-
+    if (reelSection && track) {
+        const handleScroll = () => {
+            if (window.innerWidth > 1024) {
+                const offsetTop = reelSection.offsetTop;
+                const scrollY = window.scrollY;
+                const viewHeight = window.innerHeight;
+                const sectionHeight = reelSection.offsetHeight;
+                const start = offsetTop;
+                const end = offsetTop + sectionHeight - viewHeight;
+                let progress = (scrollY - start) / (end - start);
+                progress = Math.max(0, Math.min(1, progress));
+                const maxScroll = track.scrollWidth - window.innerWidth;
+                const translate = maxScroll * progress;
+                track.style.transform = `translateX(-${translate}px)`;
             } else {
-
-                backTopBtn.style.opacity = '0';
-
-                backTopBtn.style.pointerEvents = 'none';
-
+                track.style.transform = 'none';
             }
+        };
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 1024) {
+                track.style.transform = 'none';
+            } else {
+                handleScroll();
+            }
+        });
+    }
 
+    // --- 8. GLOBAL IMAGE PARALLAX ENGINE ---
+    const parallaxImages = document.querySelectorAll('.card-visual img, .reel-visual img');
+    const parallaxSpeed = 0.15;
+
+    if (parallaxImages.length > 0) {
+        const animateParallax = () => {
+            const windowHeight = window.innerHeight;
+            parallaxImages.forEach(img => {
+                const container = img.parentElement;
+                const rect = container.getBoundingClientRect();
+                if (rect.top < windowHeight && rect.bottom > 0) {
+                    const centerY = windowHeight / 2;
+                    const containerCenter = rect.top + (rect.height / 2);
+                    const distFromCenter = containerCenter - centerY;
+                    const translateY = distFromCenter * parallaxSpeed;
+                    img.style.transform = `translateY(${translateY}px) scale(1.1)`;
+                }
+            });
+            requestAnimationFrame(animateParallax);
+        };
+        requestAnimationFrame(animateParallax);
+    }
+    // --- 9. CONTACT MODAL LOGIC ---
+    const modal = document.getElementById('contact-modal');
+    const modalTriggers = document.querySelectorAll('.contact-trigger');
+    const modalClose = document.querySelector('.modal-close-btn');
+
+    if (modal && modalTriggers.length > 0) {
+        // Open Modal
+        modalTriggers.forEach(trigger => {
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent jump to #contact
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Lock scroll
+
+                // If fullscreen menu is open, close it
+                const fullMenu = document.querySelector('.fullscreen-menu');
+                const menuBtn = document.querySelector('.menu-trigger');
+                if (fullMenu && fullMenu.classList.contains('active')) {
+                    fullMenu.classList.remove('active');
+                    menuBtn.classList.remove('active');
+                }
+            });
+        });
+
+        // Close functions
+        const closeModal = () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // Unlock scroll
+        };
+
+        if (modalClose) modalClose.addEventListener('click', closeModal);
+
+        // Close on clicking outside the box
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    }
+    // --- 10. WORK PAGE REVEAL ANIMATION ---
+    const workItems = document.querySelectorAll('.work-item');
+
+    if (workItems.length > 0) {
+        // Observer for reveal animation
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal');
+                }
+            });
+        }, {
+            threshold: 0.1 // Trigger when 10% visible
+        });
+
+        workItems.forEach(item => {
+            revealObserver.observe(item);
+        });
+    }
+    // --- 11. AUTO-ACTIVE MENU HIGHLIGHT ---
+    const currentPath = window.location.pathname;
+    const menuLinksAll = document.querySelectorAll('.menu-link');
+
+    menuLinksAll.forEach(link => {
+        // Get the href attribute (e.g., "work.html")
+        const linkPath = link.getAttribute('href');
+
+        // If the current path ends with the link path (handles / vs /index.html)
+        if (currentPath.endsWith(linkPath) || (currentPath === '/' && linkPath === 'index.html')) {
+            link.style.color = 'var(--accent-gold)';
+            link.style.paddingLeft = '20px';
+        }
+    });
+    // --- 12. PRELOADER LOGIC ---
+    const preloader = document.querySelector('.preloader');
+    const barFill = document.querySelector('.bar-fill');
+
+    if (preloader) {
+        let width = 0;
+        const interval = setInterval(() => {
+            width += Math.random() * 10;
+            if (width > 100) width = 100;
+            barFill.style.width = width + '%';
+
+            if (width === 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    preloader.classList.add('complete');
+                }, 500);
+            }
         }, 100);
 
-        window.addEventListener('scroll', toggleBackBtn, { passive: true });
-
+        // Safety: ensure it clears on load
+        window.addEventListener('load', () => { width = 100; });
     }
 
-    // ===== 9. LAZY LOADING IMAGES =====
+    // --- 13. VIDEO LIGHTBOX LOGIC ---
+    const videoModal = document.getElementById('video-lightbox');
+    const videoFrame = document.getElementById('video-frame');
+    const videoTriggers = document.querySelectorAll('.video-trigger');
+    const closeVideo = document.getElementById('close-video');
 
-    if ('IntersectionObserver' in window) {
-
-        const imageObserver = new IntersectionObserver((entries) => {
-
-            entries.forEach(entry => {
-
-                if (entry.isIntersecting) {
-
-                    const img = entry.target;
-
-                    if (img.dataset.src) {
-
-                        img.src = img.dataset.src;
-
-                        img.removeAttribute('data-src');
-
-                    }
-
-                    imageObserver.unobserve(img);
-
-                }
-
-            });
-
-        }, { rootMargin: '50px' });
-
-        document.querySelectorAll('img[data-src]').forEach(img => imageObserver.observe(img));
-
-    }
-
-    // ===== 10. FORM VALIDATION & FEEDBACK =====
-    const enhanceFormUX = () => {
-        const form = document.querySelector('.contact-form form');
-        const submitBtn = document.querySelector('.btn-submit');
-
-        if (!form || !submitBtn) return;
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            // Show loading state
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite;">⏳</span> Sending...';
-
-            // Simulate form submission (replace with actual logic)
-            setTimeout(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '✓ Message Sent!';
-                submitBtn.style.background = '#4CAF50';
-
-                setTimeout(() => {
-                    submitBtn.textContent = originalText;
-                    submitBtn.style.background = '';
-                    form.reset();
-                }, 3000);
-            }, 2000);
-        });
-
-        // Real-time validation
-        const inputs = form.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('blur', () => {
-                if (input.validity.valid && input.value) {
-                    input.style.borderBottomColor = '#4CAF50';
-                } else if (input.value && !input.validity.valid) {
-                    input.style.borderBottomColor = '#ff4444';
-                } else {
-                    input.style.borderBottomColor = '';
+    if (videoModal && videoTriggers.length > 0) {
+        videoTriggers.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const videoId = btn.getAttribute('data-video-id');
+                if (videoId) {
+                    videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+                    videoModal.classList.add('active');
                 }
             });
         });
-    };
 
-    enhanceFormUX();
+        const hideVideo = () => {
+            videoModal.classList.remove('active');
+            videoFrame.src = ''; // Stops audio
+        };
 
+        if (closeVideo) closeVideo.addEventListener('click', hideVideo);
+        videoModal.addEventListener('click', (e) => {
+            if (e.target === videoModal) hideVideo();
+        });
+    }
+
+    // --- 14. SMART CURSOR HOVER TRIGGERS ---
+    const cursorOutline = document.querySelector('.cursor-outline');
+    const hoverTargets = document.querySelectorAll('.work-item, .card-visual, .reel-visual');
+
+    if (cursorOutline && hoverTargets.length > 0) {
+        hoverTargets.forEach(target => {
+            target.addEventListener('mouseenter', () => {
+                cursorOutline.classList.add('active-view');
+            });
+            target.addEventListener('mouseleave', () => {
+                cursorOutline.classList.remove('active-view');
+            });
+        });
+    }
 });
-
-// Add spin animation for loading state
-const style = document.createElement('style');
-style.textContent = `
-@keyframes spin {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-`;
-document.head.appendChild(style);

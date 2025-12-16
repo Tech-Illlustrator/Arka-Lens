@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fullMenu.classList.toggle('active');
             menuBtn.classList.toggle('active');
 
-            // TOGGLE HEADER COLOR STATE
+            // TOGGLE HEADER COLOR STATE (For Logo visibility)
             if (header) header.classList.toggle('menu-active');
 
             // Toggle body scroll
@@ -122,13 +122,18 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(animateStack);
     }
 
-    // --- 7. HORIZONTAL REEL ENGINE (Services Page) ---
+    // --- 7. HORIZONTAL REEL ENGINE (UPDATED FOR DESKTOP MODE ON MOBILE) ---
     const reelSection = document.querySelector('.horizontal-scroll-view');
     const track = document.querySelector('.horizontal-track');
 
     if (reelSection && track) {
         const handleScroll = () => {
-            if (window.innerWidth > 1024) {
+            // UPDATED CHECK: Is screen wide (>1024) AND does it have a mouse (hover: hover)?
+            // This prevents "Desktop Mode" on phones from triggering the horizontal scroll.
+            const isDesktop = window.innerWidth > 1024;
+            const hasMouse = window.matchMedia("(hover: hover)").matches;
+
+            if (isDesktop && hasMouse) {
                 const offsetTop = reelSection.offsetTop;
                 const scrollY = window.scrollY;
                 const viewHeight = window.innerHeight;
@@ -141,12 +146,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const translate = maxScroll * progress;
                 track.style.transform = `translateX(-${translate}px)`;
             } else {
+                // Force vertical layout on Touch Devices or Mobile
                 track.style.transform = 'none';
             }
         };
+
         window.addEventListener('scroll', handleScroll);
         window.addEventListener('resize', () => {
-            if (window.innerWidth <= 1024) {
+            // Re-check conditions on resize
+            const isDesktop = window.innerWidth > 1024;
+            const hasMouse = window.matchMedia("(hover: hover)").matches;
+
+            if (!isDesktop || !hasMouse) {
                 track.style.transform = 'none';
             } else {
                 handleScroll();
@@ -176,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         requestAnimationFrame(animateParallax);
     }
+
     // --- 9. CONTACT MODAL LOGIC ---
     const modal = document.getElementById('contact-modal');
     const modalTriggers = document.querySelectorAll('.contact-trigger');
@@ -219,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
     // --- 10. WORK PAGE REVEAL ANIMATION ---
     const workItems = document.querySelectorAll('.work-item');
 
@@ -238,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             revealObserver.observe(item);
         });
     }
+
     // --- 11. AUTO-ACTIVE MENU HIGHLIGHT ---
     const currentPath = window.location.pathname;
     const menuLinksAll = document.querySelectorAll('.menu-link');
@@ -252,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
             link.style.paddingLeft = '20px';
         }
     });
+
     // --- 12. PRELOADER LOGIC ---
     const preloader = document.querySelector('.preloader');
     const barFill = document.querySelector('.bar-fill');

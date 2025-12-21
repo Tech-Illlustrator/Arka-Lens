@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. FULL SCREEN MENU LOGIC ---
     const menuBtn = document.querySelector('.menu-trigger');
     const fullMenu = document.querySelector('.fullscreen-menu');
-    const header = document.querySelector('.floating-header'); // Select the header
+    const header = document.querySelector('.floating-header');
     const menuLinks = document.querySelectorAll('.menu-link');
 
     if (menuBtn && fullMenu) {
@@ -11,19 +11,18 @@ document.addEventListener('DOMContentLoaded', () => {
             fullMenu.classList.toggle('active');
             menuBtn.classList.toggle('active');
 
-            // TOGGLE HEADER COLOR STATE (For Logo visibility)
+            // Toggle header color state
             if (header) header.classList.toggle('menu-active');
 
             // Toggle body scroll
             document.body.style.overflow = fullMenu.classList.contains('active') ? 'hidden' : '';
         });
 
-        // Close menu when a link is clicked
         menuLinks.forEach(link => {
             link.addEventListener('click', () => {
                 fullMenu.classList.remove('active');
                 menuBtn.classList.remove('active');
-                if (header) header.classList.remove('menu-active'); // Reset header
+                if (header) header.classList.remove('menu-active');
                 document.body.style.overflow = '';
             });
         });
@@ -43,28 +42,43 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTime();
     }
 
-    // --- 3. CUSTOM CURSOR ---
+    // --- 3. CUSTOM CURSOR (OPTIMIZED) ---
+    // Only run on non-touch devices
     if (window.matchMedia("(pointer: fine)").matches) {
-        const cursorDot = document.createElement('div');
-        const cursorOutline = document.createElement('div');
-        cursorDot.className = 'cursor-dot';
-        cursorOutline.className = 'cursor-outline';
-        document.body.appendChild(cursorDot);
-        document.body.appendChild(cursorOutline);
+        const cursorDot = document.querySelector('.cursor-dot') || document.createElement('div');
+        const cursorOutline = document.querySelector('.cursor-outline') || document.createElement('div');
+
+        if (!document.querySelector('.cursor-dot')) {
+            cursorDot.className = 'cursor-dot';
+            cursorOutline.className = 'cursor-outline';
+            document.body.appendChild(cursorDot);
+            document.body.appendChild(cursorOutline);
+        }
+
+        let mouseX = 0, mouseY = 0;
+        let outlineX = 0, outlineY = 0;
 
         window.addEventListener('mousemove', (e) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
-            cursorOutline.animate({
-                left: `${posX}px`,
-                top: `${posY}px`
-            }, { duration: 500, fill: "forwards" });
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // Move dot instantly
+            cursorDot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
         });
+
+        // Smooth follow loop
+        const animateCursor = () => {
+            // Lerp (Linear Interpolation) for smoothness
+            outlineX += (mouseX - outlineX) * 0.15;
+            outlineY += (mouseY - outlineY) * 0.15;
+
+            cursorOutline.style.transform = `translate(${outlineX}px, ${outlineY}px) translate(-50%, -50%)`;
+            requestAnimationFrame(animateCursor);
+        };
+        animateCursor();
     }
 
-    // --- 4. MAGNETIC BUTTONS ---
+    // --- 4. MAGNETIC BUTTONS (Performance Tweak) ---
     const magneticBtns = document.querySelectorAll('.apple-button');
     magneticBtns.forEach(btn => {
         btn.addEventListener('mousemove', (e) => {
@@ -78,58 +92,66 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- 5. HERO PARALLAX ---
+    // --- 5. HERO PARALLAX (Only when visible) ---
     const heroMedia = document.querySelector('.media-layer');
     if (heroMedia) {
         window.addEventListener('scroll', () => {
             const scrolled = window.scrollY;
             if (scrolled < window.innerHeight) {
                 const scale = 1.1 - (scrolled * 0.0005);
-                heroMedia.style.transform = `scale(${Math.max(1.0, scale)})`;
+                // Use translateZ for GPU
+                heroMedia.style.transform = `scale(${Math.max(1.0, scale)}) translateZ(0)`;
             }
         }, { passive: true });
     }
 
-    // --- 6. STACK ENGINE (Work Page) ---
-    const cards = document.querySelectorAll('.stack-card');
-    if (cards.length > 0) {
-        const animateStack = () => {
-            const windowHeight = window.innerHeight;
-            cards.forEach((card, index) => {
-                const nextCard = cards[index + 1];
-                if (nextCard) {
-                    const nextRect = nextCard.getBoundingClientRect();
-                    const start = windowHeight;
-                    const end = 60;
-                    let progress = (start - nextRect.top) / (start - end);
-                    progress = Math.max(0, Math.min(1, progress));
+    // --- 6. OPTIMIZED STACK ENGINE (Observer + RequestAnimationFrame) ---
+    const stackSection = document.querySelector('.stack-engine');
+    const stackCards = document.querySelectorAll('.stack-card');
 
-                    if (progress > 0) {
-                        const scale = 1 - (progress * 0.1);
-                        const filter = 1 - (progress * 0.6);
-                        card.style.transform = `scale(${scale})`;
-                        card.style.filter = `brightness(${filter})`;
-                        card.style.opacity = `${1 - (progress * 0.5)}`;
-                    } else {
-                        card.style.transform = 'scale(1)';
-                        card.style.filter = 'brightness(1)';
-                        card.style.opacity = '1';
+    if (stackSection && stackCards.length > 0) {
+        let isStackVisible = false;
+
+        const observer = new IntersectionObserver((entries) => {
+            isStackVisible = entries[0].isIntersecting;
+        }, { rootMargin: "200px 0px" });
+        observer.observe(stackSection);
+
+        const animateStack = () => {
+            if (isStackVisible) {
+                const windowHeight = window.innerHeight;
+                stackCards.forEach((card, index) => {
+                    const nextCard = stackCards[index + 1];
+                    if (nextCard) {
+                        const nextRect = nextCard.getBoundingClientRect();
+                        const start = windowHeight;
+                        const end = 60;
+                        let progress = (start - nextRect.top) / (start - end);
+                        progress = Math.max(0, Math.min(1, progress));
+
+                        if (progress > 0) {
+                            card.style.transform = `scale(${1 - (progress * 0.1)})`;
+                            card.style.filter = `brightness(${1 - (progress * 0.6)})`;
+                            card.style.opacity = `${1 - (progress * 0.5)}`;
+                        } else {
+                            card.style.transform = 'scale(1)';
+                            card.style.filter = 'brightness(1)';
+                            card.style.opacity = '1';
+                        }
                     }
-                }
-            });
+                });
+            }
             requestAnimationFrame(animateStack);
         };
-        requestAnimationFrame(animateStack);
+        animateStack();
     }
 
-    // --- 7. HORIZONTAL REEL ENGINE (UPDATED FOR DESKTOP MODE ON MOBILE) ---
+    // --- 7. HORIZONTAL REEL ENGINE (Desktop Only) ---
     const reelSection = document.querySelector('.horizontal-scroll-view');
     const track = document.querySelector('.horizontal-track');
 
     if (reelSection && track) {
         const handleScroll = () => {
-            // UPDATED CHECK: Is screen wide (>1024) AND does it have a mouse (hover: hover)?
-            // This prevents "Desktop Mode" on phones from triggering the horizontal scroll.
             const isDesktop = window.innerWidth > 1024;
             const hasMouse = window.matchMedia("(hover: hover)").matches;
 
@@ -138,70 +160,81 @@ document.addEventListener('DOMContentLoaded', () => {
                 const scrollY = window.scrollY;
                 const viewHeight = window.innerHeight;
                 const sectionHeight = reelSection.offsetHeight;
-                const start = offsetTop;
-                const end = offsetTop + sectionHeight - viewHeight;
-                let progress = (scrollY - start) / (end - start);
-                progress = Math.max(0, Math.min(1, progress));
-                const maxScroll = track.scrollWidth - window.innerWidth;
-                const translate = maxScroll * progress;
-                track.style.transform = `translateX(-${translate}px)`;
+
+                // Only calculate if section is roughly in view
+                if (scrollY + viewHeight > offsetTop && scrollY < offsetTop + sectionHeight) {
+                    const start = offsetTop;
+                    const end = offsetTop + sectionHeight - viewHeight;
+                    let progress = (scrollY - start) / (end - start);
+                    progress = Math.max(0, Math.min(1, progress));
+                    const maxScroll = track.scrollWidth - window.innerWidth;
+                    const translate = maxScroll * progress;
+                    track.style.transform = `translateX(-${translate}px)`;
+                }
             } else {
-                // Force vertical layout on Touch Devices or Mobile
                 track.style.transform = 'none';
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         window.addEventListener('resize', () => {
-            // Re-check conditions on resize
             const isDesktop = window.innerWidth > 1024;
             const hasMouse = window.matchMedia("(hover: hover)").matches;
-
-            if (!isDesktop || !hasMouse) {
-                track.style.transform = 'none';
-            } else {
-                handleScroll();
-            }
+            if (!isDesktop || !hasMouse) track.style.transform = 'none';
+            else handleScroll();
         });
     }
 
-    // --- 8. GLOBAL IMAGE PARALLAX ENGINE ---
+    // --- 8. GLOBAL IMAGE PARALLAX (Observer Optimized) ---
     const parallaxImages = document.querySelectorAll('.card-visual img, .reel-visual img');
-    const parallaxSpeed = 0.15;
 
     if (parallaxImages.length > 0) {
+        // Mark images as 'in-view' so we only animate what we see
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('in-view');
+                else entry.target.classList.remove('in-view');
+            });
+        });
+
+        parallaxImages.forEach(img => observer.observe(img));
+
         const animateParallax = () => {
             const windowHeight = window.innerHeight;
-            parallaxImages.forEach(img => {
+            const activeImages = document.querySelectorAll('img.in-view');
+
+            activeImages.forEach(img => {
                 const container = img.parentElement;
                 const rect = container.getBoundingClientRect();
-                if (rect.top < windowHeight && rect.bottom > 0) {
-                    const centerY = windowHeight / 2;
-                    const containerCenter = rect.top + (rect.height / 2);
-                    const distFromCenter = containerCenter - centerY;
-                    const translateY = distFromCenter * parallaxSpeed;
-                    img.style.transform = `translateY(${translateY}px) scale(1.1)`;
-                }
+                const centerY = windowHeight / 2;
+                const containerCenter = rect.top + (rect.height / 2);
+                const translateY = (containerCenter - centerY) * 0.15;
+                // GPU accelerated translation
+                img.style.transform = `translate3d(0, ${translateY}px, 0) scale(1.1)`;
             });
             requestAnimationFrame(animateParallax);
         };
-        requestAnimationFrame(animateParallax);
+        animateParallax();
     }
 
-    // --- 9. CONTACT MODAL LOGIC ---
+    // --- 9. CONTACT MODAL & VIDEO LIGHTBOX ---
     const modal = document.getElementById('contact-modal');
     const modalTriggers = document.querySelectorAll('.contact-trigger');
     const modalClose = document.querySelector('.modal-close-btn');
 
+    const videoModal = document.getElementById('video-lightbox');
+    const videoFrame = document.getElementById('video-frame');
+    const videoTriggers = document.querySelectorAll('.video-trigger');
+    const closeVideo = document.getElementById('close-video');
+
+    // Contact Modal Logic
     if (modal && modalTriggers.length > 0) {
-        // Open Modal
         modalTriggers.forEach(trigger => {
             trigger.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent jump to #contact
+                e.preventDefault();
                 modal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Lock scroll
-
-                // If fullscreen menu is open, close it
+                document.body.style.overflow = 'hidden';
+                // Close menu if open
                 const fullMenu = document.querySelector('.fullscreen-menu');
                 const menuBtn = document.querySelector('.menu-trigger');
                 if (fullMenu && fullMenu.classList.contains('active')) {
@@ -210,92 +243,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
-
-        // Close functions
         const closeModal = () => {
             modal.classList.remove('active');
-            document.body.style.overflow = ''; // Unlock scroll
+            document.body.style.overflow = '';
         };
-
         if (modalClose) modalClose.addEventListener('click', closeModal);
-
-        // Close on clicking outside the box
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        // Close on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('active')) {
-                closeModal();
-            }
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
     }
 
-    // --- 10. WORK PAGE REVEAL ANIMATION ---
-    const workItems = document.querySelectorAll('.work-item');
-
-    if (workItems.length > 0) {
-        // Observer for reveal animation
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('reveal');
-                }
-            });
-        }, {
-            threshold: 0.1 // Trigger when 10% visible
-        });
-
-        workItems.forEach(item => {
-            revealObserver.observe(item);
-        });
-    }
-
-    // --- 11. AUTO-ACTIVE MENU HIGHLIGHT ---
-    const currentPath = window.location.pathname;
-    const menuLinksAll = document.querySelectorAll('.menu-link');
-
-    menuLinksAll.forEach(link => {
-        // Get the href attribute (e.g., "work.html")
-        const linkPath = link.getAttribute('href');
-
-        // If the current path ends with the link path (handles / vs /index.html)
-        if (currentPath.endsWith(linkPath) || (currentPath === '/' && linkPath === 'index.html')) {
-            link.style.color = 'var(--accent-gold)';
-            link.style.paddingLeft = '20px';
-        }
-    });
-
-    // --- 12. PRELOADER LOGIC ---
-    const preloader = document.querySelector('.preloader');
-    const barFill = document.querySelector('.bar-fill');
-
-    if (preloader) {
-        let width = 0;
-        const interval = setInterval(() => {
-            width += Math.random() * 10;
-            if (width > 100) width = 100;
-            barFill.style.width = width + '%';
-
-            if (width === 100) {
-                clearInterval(interval);
-                setTimeout(() => {
-                    preloader.classList.add('complete');
-                }, 500);
-            }
-        }, 100);
-
-        // Safety: ensure it clears on load
-        window.addEventListener('load', () => { width = 100; });
-    }
-
-    // --- 13. VIDEO LIGHTBOX LOGIC ---
-    const videoModal = document.getElementById('video-lightbox');
-    const videoFrame = document.getElementById('video-frame');
-    const videoTriggers = document.querySelectorAll('.video-trigger');
-    const closeVideo = document.getElementById('close-video');
-
+    // Video Modal Logic
     if (videoModal && videoTriggers.length > 0) {
         videoTriggers.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -307,30 +264,161 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
-
         const hideVideo = () => {
             videoModal.classList.remove('active');
-            videoFrame.src = ''; // Stops audio
+            videoFrame.src = '';
         };
-
         if (closeVideo) closeVideo.addEventListener('click', hideVideo);
-        videoModal.addEventListener('click', (e) => {
-            if (e.target === videoModal) hideVideo();
-        });
+        videoModal.addEventListener('click', (e) => { if (e.target === videoModal) hideVideo(); });
     }
 
-    // --- 14. SMART CURSOR HOVER TRIGGERS ---
+    // --- 10. REVEAL ON SCROLL (Work Page) ---
+    const workItems = document.querySelectorAll('.work-item');
+    if (workItems.length > 0) {
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('reveal');
+            });
+        }, { threshold: 0.1 });
+        workItems.forEach(item => revealObserver.observe(item));
+    }
+
+    // --- 11. ACTIVE MENU HIGHLIGHT ---
+    const currentPath = window.location.pathname;
+    const menuLinksAll = document.querySelectorAll('.menu-link');
+    menuLinksAll.forEach(link => {
+        const linkPath = link.getAttribute('href');
+        if (currentPath.endsWith(linkPath) || (currentPath === '/' && linkPath === 'index.html')) {
+            link.style.color = 'var(--accent-gold)';
+            link.style.paddingLeft = '20px';
+        }
+    });
+
+    // --- 12. REAL PRELOADER (Load-based) ---
+    const preloader = document.querySelector('.preloader');
+    const barFill = document.querySelector('.bar-fill');
+
+    if (preloader) {
+        // Collect all images/videos to monitor
+        const media = [...document.querySelectorAll('img'), ...document.querySelectorAll('video')];
+        let loadedCount = 0;
+
+        const updateProgress = () => {
+            loadedCount++;
+            const percent = Math.round((loadedCount / media.length) * 100);
+            barFill.style.width = `${percent}%`;
+
+            if (loadedCount >= media.length) {
+                setTimeout(() => {
+                    preloader.classList.add('complete');
+                }, 500);
+            }
+        };
+
+        if (media.length === 0) {
+            barFill.style.width = '100%';
+            setTimeout(() => preloader.classList.add('complete'), 500);
+        } else {
+            media.forEach(file => {
+                if (file.complete) {
+                    updateProgress();
+                } else {
+                    file.addEventListener('load', updateProgress);
+                    file.addEventListener('error', updateProgress);
+                }
+            });
+        }
+    }
+
+    // --- 13. CURSOR HOVER STATES ---
     const cursorOutline = document.querySelector('.cursor-outline');
-    const hoverTargets = document.querySelectorAll('.work-item, .card-visual, .reel-visual');
+    const hoverTargets = document.querySelectorAll('.work-item, .card-visual, .reel-visual, a, button');
 
     if (cursorOutline && hoverTargets.length > 0) {
         hoverTargets.forEach(target => {
-            target.addEventListener('mouseenter', () => {
-                cursorOutline.classList.add('active-view');
-            });
-            target.addEventListener('mouseleave', () => {
-                cursorOutline.classList.remove('active-view');
-            });
+            target.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+            target.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+        });
+    }
+    // --- 14. EMAILJS INTEGRATION (The Engine) ---
+    const contactForm = document.getElementById('contact-form'); // Ensure you added id="contact-form" to your HTML <form>
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Stop page reload
+
+            // 1. Get the button to change its text state
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+
+            // 2. Visual Feedback: "Sending..."
+            submitBtn.innerText = 'SENDING...';
+            submitBtn.style.opacity = '0.7';
+            submitBtn.disabled = true;
+
+            // 3. Gather Data
+            const formData = {
+                from_name: document.getElementById('name').value,
+                from_email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                message: document.getElementById('message').value,
+                // Add the current time for your reference
+                timestamp: new Date().toLocaleString()
+            };
+
+            // 4. Send to EmailJS
+            // REPLACE 'service_ID' and 'template_ID' with your actual IDs from Phase 1
+            emailjs.send('service_jwzflrh', 'template_fkw01bj', formData)
+                .then(() => {
+                    // SUCCESS STATE
+                    submitBtn.innerText = 'MESSAGE SENT';
+                    submitBtn.style.backgroundColor = '#bf9b30'; // Gold
+                    submitBtn.style.color = '#5e0b15'; // Maroon
+
+                    // Clear form
+                    contactForm.reset();
+
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        document.querySelector('.modal-backdrop').classList.remove('active');
+                        document.body.style.overflow = '';
+                        // Reset button for next time
+                        submitBtn.innerText = originalText;
+                        submitBtn.style.backgroundColor = '';
+                        submitBtn.style.color = '';
+                        submitBtn.style.opacity = '1';
+                        submitBtn.disabled = false;
+                    }, 2000);
+                })
+                .catch((error) => {
+                    // ERROR STATE
+                    console.error('Email Error:', error);
+                    submitBtn.innerText = 'FAILED. TRY AGAIN.';
+                    submitBtn.style.backgroundColor = 'red';
+
+                    setTimeout(() => {
+                        submitBtn.innerText = originalText;
+                        submitBtn.style.backgroundColor = '';
+                        submitBtn.style.opacity = '1';
+                        submitBtn.disabled = false;
+                    }, 3000);
+                });
+        });
+    }
+    // --- 15. BEFORE/AFTER SLIDER LOGIC ---
+    const compRange = document.querySelector('.comparison-range');
+    const compBefore = document.querySelector('.comp-img.before');
+    const compLine = document.querySelector('.slider-line');
+
+    if (compRange && compBefore && compLine) {
+        compRange.addEventListener('input', (e) => {
+            const val = e.target.value;
+            // Update the clipping of the top image
+            // inset(top right bottom left) -> we change 'right' based on 100 - val
+            compBefore.style.clipPath = `inset(0 ${100 - val}% 0 0)`;
+
+            // Move the gold line
+            compLine.style.left = `${val}%`;
         });
     }
 });

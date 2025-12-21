@@ -11,12 +11,10 @@
     --bg-deep: var(--color-cream);
     --bg-card: var(--color-maroon);
     --bg-glass: rgba(94, 11, 21, 0.05);
-    /* Maroon tint */
     --border-light: rgba(94, 11, 21, 0.1);
 
     --text-primary: var(--color-black);
     --text-inverse: var(--color-cream);
-    /* For text inside maroon cards */
     --text-secondary: rgba(10, 10, 10, 0.6);
 
     --accent-gold: var(--color-gold);
@@ -43,6 +41,7 @@
     margin: 0;
     padding: 0;
     cursor: none;
+    /* Custom cursor everywhere */
 }
 
 html {
@@ -56,18 +55,30 @@ body {
     font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    /* Fade In */
+    animation: fadeContent 1s var(--ease-apple) forwards;
+    opacity: 0;
 }
 
-/* --- 2. CUSTOM CURSOR (Updated for Light Theme) --- */
+@keyframes fadeContent {
+    to {
+        opacity: 1;
+    }
+}
+
+/* --- 2. CUSTOM CURSOR (OPTIMIZED) --- */
 .cursor-dot,
 .cursor-outline {
     position: fixed;
     top: 0;
     left: 0;
-    transform: translate(-50%, -50%);
+    /* Use transform for movement to save CPU */
+    transform: translate(-100px, -100px);
+    /* Hide offscreen initially */
     border-radius: 50%;
     z-index: 9999;
     pointer-events: none;
+    will-change: transform;
 }
 
 .cursor-dot {
@@ -81,6 +92,7 @@ body {
     height: 40px;
     border: 1px solid var(--accent-gold);
     transition: width 0.2s, height 0.2s, background-color 0.2s;
+    /* NO transform transition here, handled in JS loop */
 }
 
 body.hovering .cursor-outline {
@@ -91,7 +103,7 @@ body.hovering .cursor-outline {
     border-color: var(--accent-pop);
 }
 
-/* NOISE TEXTURE (Subtle Paper Feel) */
+/* NOISE TEXTURE (Performance: Hide on mobile) */
 .noise-surface {
     position: fixed;
     inset: 0;
@@ -100,6 +112,59 @@ body.hovering .cursor-outline {
     background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
     opacity: 0.05;
     mix-blend-mode: multiply;
+    will-change: opacity;
+}
+
+@media (max-width: 768px) {
+    .noise-surface {
+        display: none;
+    }
+}
+
+/* --- PRELOADER --- */
+.preloader {
+    position: fixed;
+    inset: 0;
+    background: var(--color-maroon);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.6s var(--ease-apple), visibility 0.6s;
+}
+
+.preloader.complete {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-content {
+    text-align: center;
+    width: 300px;
+}
+
+.brand-loader {
+    font-family: var(--font-display);
+    color: var(--color-gold);
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 20px;
+    letter-spacing: 4px;
+}
+
+.loading-bar {
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.bar-fill {
+    width: 0%;
+    height: 100%;
+    background: var(--color-gold);
+    transition: width 0.3s ease;
 }
 
 /* --- 3. INVISIBLE HEADER --- */
@@ -112,7 +177,6 @@ body.hovering .cursor-outline {
     z-index: 2000;
     padding: 40px 5%;
     pointer-events: none;
-    /* We remove mix-blend-mode difference because it looks bad on cream/maroon */
 }
 
 .floating-brand {
@@ -122,12 +186,15 @@ body.hovering .cursor-outline {
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 1.5rem;
-    color: var(--color-maroon);
-    /* Changed to Maroon */
+    color: var(--color-gold);
     text-decoration: none;
     pointer-events: auto;
     text-transform: uppercase;
     letter-spacing: -1px;
+}
+
+header.menu-active .floating-brand {
+    color: var(--color-cream);
 }
 
 .menu-corner {
@@ -145,7 +212,10 @@ body.hovering .cursor-outline {
     gap: 16px;
     cursor: pointer;
     color: var(--color-maroon);
-    /* Changed to Maroon */
+}
+
+.minimal-trigger.active {
+    color: var(--color-cream);
 }
 
 .trigger-text {
@@ -154,6 +224,7 @@ body.hovering .cursor-outline {
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    color: var(--color-gold);
 }
 
 .trigger-lines {
@@ -168,7 +239,7 @@ body.hovering .cursor-outline {
     display: block;
     width: 100%;
     height: 2px;
-    background-color: currentColor;
+    background-color: var(--color-gold);
     transition: transform 0.3s var(--ease-apple), width 0.3s ease;
 }
 
@@ -210,13 +281,13 @@ body.hovering .cursor-outline {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Less dark than before to feel happier */
     filter: brightness(0.7) contrast(1.1);
     transform: scale(1.1);
+    /* Initial state */
     will-change: transform;
+    /* Performance Hint */
 }
 
-/* Warm Maroon Vignette instead of Black */
 .vignette-overlay {
     position: absolute;
     inset: 0;
@@ -250,7 +321,6 @@ body.hovering .cursor-outline {
     text-shadow: 0 10px 30px rgba(94, 11, 21, 0.4);
     margin-bottom: 40px;
     color: var(--color-cream);
-    /* Ensure headline stays light on hero images */
 }
 
 /* --- 5. BUTTONS --- */
@@ -319,10 +389,8 @@ body.hovering .cursor-outline {
     max-width: 1400px;
     height: 85vh;
     background: var(--bg-card);
-    /* DEEP MAROON BACKGROUND */
     border-radius: var(--radius-lg);
     border: 1px solid rgba(191, 155, 48, 0.2);
-    /* Gold border */
     overflow: hidden;
     position: relative;
     box-shadow: 0 -20px 60px rgba(94, 11, 21, 0.15);
@@ -347,11 +415,11 @@ body.hovering .cursor-outline {
     object-fit: cover;
     will-change: transform;
     transition: none;
+    /* Handled by JS */
 }
 
 .card-content {
     padding: 40px;
-    /* Gradient from Maroon to Transparent */
     background: linear-gradient(to top, var(--color-maroon), transparent);
     position: absolute;
     bottom: 0;
@@ -364,7 +432,6 @@ body.hovering .cursor-outline {
     font-size: clamp(2rem, 4vw, 4rem);
     margin: 10px 0;
     color: var(--text-inverse);
-    /* Light text on Maroon card */
 }
 
 /* --- 7. FULL SCREEN MENU --- */
@@ -372,7 +439,6 @@ body.hovering .cursor-outline {
     position: fixed;
     inset: 0;
     background: var(--color-maroon);
-    /* Menu is now Maroon */
     z-index: 1500;
     display: flex;
     align-items: center;
@@ -412,7 +478,6 @@ body.hovering .cursor-outline {
     font-family: var(--font-display);
     font-size: clamp(3rem, 6vw, 6rem);
     color: var(--color-cream);
-    /* Light text on menu */
     text-decoration: none;
     text-transform: uppercase;
     border-bottom: 1px solid rgba(244, 241, 234, 0.1);
@@ -462,7 +527,6 @@ body.hovering .cursor-outline {
 /* --- 8. FOOTER --- */
 .footer-view {
     background: var(--color-black);
-    /* Deep Black footer for contrast */
     padding: 80px 5% 40px;
     position: relative;
     z-index: 10;
@@ -641,7 +705,6 @@ body.hovering .cursor-outline {
 
 .gold {
     color: var(--color-maroon);
-    /* Gold text on cream background can be hard to read, stick to Maroon for price */
     font-weight: 600;
 }
 
@@ -677,7 +740,6 @@ body.hovering .cursor-outline {
     border-radius: 24px;
     overflow: hidden;
     background: var(--color-cream);
-    /* Reel cards match background */
     border: 1px solid var(--border-light);
     transition: transform 0.3s ease;
 }
@@ -730,7 +792,6 @@ body.hovering .cursor-outline {
     justify-content: center;
     position: relative;
     background: white;
-    /* Clean white for card bottom */
 }
 
 .reel-number {
@@ -772,8 +833,7 @@ body.hovering .cursor-outline {
     line-height: 1;
 }
 
-
-/* --- 9. MOBILE RESPONSIVENESS --- */
+/* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 1024px),
 (hover: none) and (pointer: coarse) {
     .footer-top {
@@ -852,6 +912,7 @@ body.hovering .cursor-outline {
         display: none;
     }
 
+    /* Hide Custom Cursor on Mobile */
     .cursor-dot,
     .cursor-outline {
         display: none;
@@ -861,6 +922,27 @@ body.hovering .cursor-outline {
     *::before,
     *::after {
         cursor: auto;
+    }
+
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        padding-bottom: 100px;
+    }
+
+    .menu-info {
+        border-left: none;
+        border-top: 1px solid rgba(244, 241, 234, 0.1);
+        padding-left: 0;
+        padding-top: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .menu-content {
+        max-height: 80vh;
+        overflow-y: auto;
     }
 }
 
@@ -882,7 +964,6 @@ body.hovering .cursor-outline {
     position: fixed;
     inset: 0;
     background: rgba(94, 11, 21, 0.8);
-    /* Maroon backdrop */
     backdrop-filter: blur(12px);
     z-index: 9999;
     opacity: 0;
@@ -903,7 +984,6 @@ body.hovering .cursor-outline {
     width: 100%;
     max-width: 500px;
     background: var(--color-cream);
-    /* Cream modal */
     border: 1px solid var(--accent-gold);
     border-radius: 24px;
     padding: 40px;
@@ -1016,7 +1096,6 @@ body.hovering .cursor-outline {
 
 .work-hero .headline-display {
     color: var(--color-maroon);
-    /* Make sure title is Maroon */
 }
 
 .gallery-view {
@@ -1066,7 +1145,6 @@ body.hovering .cursor-outline {
 .work-overlay {
     position: absolute;
     inset: 0;
-    /* Maroon hover overlay instead of black */
     background: rgba(94, 11, 21, 0.2);
     transition: background 0.3s;
 }
@@ -1106,7 +1184,25 @@ body.hovering .cursor-outline {
     transform: translateY(0);
 }
 
-/* --- REFINEMENT: SCROLLBAR --- */
+/* --- VIDEO MODAL --- */
+.video-container {
+    width: 90vw;
+    height: 80vh;
+    background: black;
+    position: relative;
+}
+
+.video-wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+.video-wrapper iframe {
+    width: 100%;
+    height: 100%;
+}
+
+/* --- SCROLLBAR --- */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -1124,62 +1220,266 @@ body.hovering .cursor-outline {
     background: var(--accent-gold);
 }
 
-/* Page Fade */
-body {
-    animation: fadeContent 1s var(--ease-apple) forwards;
-    opacity: 0;
+/* --- LEGAL & TEXT PAGES --- */
+.legal-hero {
+    padding: 180px 5% 80px;
+    text-align: center;
 }
 
-@keyframes fadeContent {
-    to {
-        opacity: 1;
+.legal-hero .headline-display {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    color: var(--color-maroon);
+}
+
+.legal-container {
+    max-width: 800px;
+    margin: 0 auto 150px;
+    padding: 0 5%;
+}
+
+.legal-text {
+    font-family: var(--font-ui);
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.legal-text h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--color-maroon);
+    margin-top: 60px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 10px;
+}
+
+.legal-text p {
+    margin-bottom: 24px;
+    color: var(--text-secondary);
+}
+
+.legal-text ul {
+    margin-bottom: 24px;
+    padding-left: 20px;
+    color: var(--text-secondary);
+}
+
+.legal-text li {
+    margin-bottom: 10px;
+}
+
+/* --- CREDITS PAGE (Cast List Style) --- */
+.credits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 60px;
+    max-width: 800px;
+    margin: 0 auto 150px;
+    padding: 0 5%;
+}
+
+.credit-role {
+    text-align: right;
+    font-family: var(--font-ui);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.credit-name {
+    text-align: left;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-maroon);
+    font-size: 1.2rem;
+}
+
+.credit-divider {
+    grid-column: span 2;
+    height: 1px;
+    background: var(--border-light);
+    margin: 40px 0;
+}
+
+/* Mobile tweak for credits */
+@media (max-width: 600px) {
+    .credits-grid {
+        grid-template-columns: 1fr;
+        gap: 5px;
+        text-align: center;
+    }
+
+    .credit-role {
+        text-align: center;
+        justify-content: center;
+        margin-top: 20px;
+        color: var(--accent-gold);
+    }
+
+    .credit-name {
+        text-align: center;
+    }
+
+    .credit-divider {
+        margin: 20px 0;
     }
 }
 
-/* --- FIX 1: Make Close Button & Logo Visible on Maroon Menu --- */
-/* When the button is active (menu open), turn it Cream */
-.minimal-trigger.active {
-    color: var(--color-cream);
-    transform: rotate(180deg);
-    /* Optional: adds a nice spin effect */
+/* --- BEFORE & AFTER SLIDER --- */
+.retouch-showcase {
+    padding: 100px 5%;
+    background: var(--bg-deep);
+    text-align: center;
 }
 
-/* Make sure the text lines inside the button change color too */
-.minimal-trigger.active .trigger-lines span {
+.comparison-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.comparison-wrapper {
+    position: relative;
+    width: 100%;
+    /* Create a cinematic aspect ratio (21:9 or 16:9) */
+    aspect-ratio: 16/9;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--accent-gold);
+    box-shadow: 0 20px 50px rgba(94, 11, 21, 0.15);
+}
+
+.comp-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    /* Let clicks pass through to the input */
+}
+
+/* The "Before" image sits on top */
+.comp-img.before {
+    z-index: 2;
+    /* Initially clipped to 50% */
+    clip-path: inset(0 50% 0 0);
+    /* For demo purposes, let's make the "Before" image black & white using CSS filter */
+    filter: grayscale(100%) contrast(0.8);
+}
+
+/* The Slider Handle Decoration */
+.slider-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    /* Matches initial value */
+    width: 2px;
+    background: var(--accent-gold);
+    z-index: 10;
+    pointer-events: none;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.slider-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: var(--accent-gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* The Invisible Input (The Logic) */
+.comparison-range {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    opacity: 0;
+    cursor: e-resize;
+    margin: 0;
+}
+
+/* --- AUDIO TRIGGER --- */
+.audio-trigger {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: flex-end;
+    /* Align bars to bottom */
+    gap: 3px;
+    height: 24px;
+    cursor: pointer;
+    margin-right: 20px;
+    /* Space between sound and menu */
+    padding-bottom: 5px;
+}
+
+.audio-trigger .bar {
+    width: 2px;
+    background-color: var(--color-maroon);
+    transition: height 0.2s ease, background-color 0.3s;
+    height: 4px;
+    /* Default stopped height */
+}
+
+/* Active State (Playing) */
+.audio-trigger.playing .bar {
+    background-color: var(--color-gold);
+    /* Gold when playing */
+    animation: equalizer 1s infinite ease-in-out;
+}
+
+/* Stagger animation for each bar */
+.audio-trigger.playing .bar:nth-child(1) {
+    animation-delay: 0.0s;
+    height: 12px;
+}
+
+.audio-trigger.playing .bar:nth-child(2) {
+    animation-delay: 0.2s;
+    height: 18px;
+}
+
+.audio-trigger.playing .bar:nth-child(3) {
+    animation-delay: 0.4s;
+    height: 10px;
+}
+
+.audio-trigger.playing .bar:nth-child(4) {
+    animation-delay: 0.1s;
+    height: 14px;
+}
+
+/* In Dark Mode/Menu Active */
+header.menu-active .audio-trigger .bar {
     background-color: var(--color-cream);
 }
 
-/* If you implement the JS Step below, this handles the Logo color */
-header.menu-active .floating-brand {
-    color: var(--color-cream);
-}
+@keyframes equalizer {
 
-/* --- FIX 2: Mobile Menu Layout (Show "Other Buttons") --- */
-@media (max-width: 768px) {
-    .menu-grid {
-        /* Stack columns vertically on mobile */
-        grid-template-columns: 1fr;
-        gap: 40px;
-        padding-bottom: 100px;
-        /* Add space for scrolling */
+    0%,
+    100% {
+        transform: scaleY(1);
     }
 
-    .menu-info {
-        /* Remove the left border and add top border for mobile */
-        border-left: none;
-        border-top: 1px solid rgba(244, 241, 234, 0.1);
-        padding-left: 0;
-        padding-top: 40px;
-
-        /* Arrange socials in a grid or flex */
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .menu-content {
-        /* Ensure the content container allows scrolling if needed */
-        max-height: 80vh;
-        overflow-y: auto;
+    50% {
+        transform: scaleY(0.5);
     }
 }
